@@ -12,6 +12,9 @@ use super::Attribute;
 pub struct StyledObject<D: Display> {
     pub object_style: ObjectStyle,
     pub content: D,
+    /// If `reset` is false, the style will not be reset after the widget is
+    /// drawn.
+    pub reset: bool,
 }
 
 impl<'a, D: Display + 'a> StyledObject<D> {
@@ -137,6 +140,11 @@ impl<'a, D: Display + 'a> StyledObject<D> {
     pub fn crossed_out(self) -> StyledObject<D> {
         self.attr(Attribute::CrossedOut)
     }
+    #[inline(always)]
+    pub fn no_reset(mut self) -> StyledObject<D> {
+        self.reset = false;
+        self
+    }
 
     /// This could be used to paint the styled object on the screen. Pass a reference to the screen whereon you want to perform the painting.
     ///
@@ -149,7 +157,7 @@ impl<'a, D: Display + 'a> StyledObject<D> {
     pub fn paint(&self, screen: &Screen)
     {
         let colored_terminal = ::color(&screen);
-        let mut reset = true;
+        let mut reset = false;
 
         if let Some(bg) = self.object_style.bg_color {
             colored_terminal.set_bg(bg);
@@ -173,7 +181,7 @@ impl<'a, D: Display + 'a> StyledObject<D> {
         screen.stdout.write_string(content);
         screen.stdout.flush();
 
-        if reset {
+        if reset && self.reset {
             colored_terminal.reset();
         }
     }

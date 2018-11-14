@@ -37,6 +37,7 @@ impl ObjectStyle {
         StyledObject {
             object_style: self.clone(),
             content: val,
+            reset: true,
         }
     }
 
