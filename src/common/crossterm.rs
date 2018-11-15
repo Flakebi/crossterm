@@ -54,8 +54,8 @@ impl<'crossterm> Crossterm {
     /// let crossterm = Crossterm::new(&Screen::default());
     /// let cursor = crossterm.cursor();
     /// ```
-    pub fn cursor<'a>(&self, screen: &'a Screen) -> cursor::TerminalCursor<'a> {
-        cursor::TerminalCursor::new(screen)
+    pub fn cursor(&self) -> cursor::TerminalCursor {
+        cursor::TerminalCursor::new()
     }
 
     /// Get an `TerminalInput` implementation whereon terminal related actions can be performed.

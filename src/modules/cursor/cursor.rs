@@ -26,14 +26,13 @@ use Screen;
 /// cursor.blink(true);
 /// cursor.move_left(2);
 /// ```
-pub struct TerminalCursor<'stdout> {
-    screen: &'stdout Arc<TerminalOutput>,
+pub struct TerminalCursor {
     terminal_cursor: Box<ITerminalCursor + Sync + Send>,
 }
 
-impl<'stdout> TerminalCursor<'stdout> {
+impl TerminalCursor {
     /// Create new cursor instance whereon cursor related actions can be performed.
-    pub fn new(screen: &'stdout Screen) -> TerminalCursor<'stdout> {
+    pub fn new() -> TerminalCursor {
         #[cfg(target_os = "windows")]
         let cursor =
             functions::get_module::<Box<ITerminalCursor + Sync + Send>>(WinApiCursor::new(), AnsiCursor::new())
@@ -44,7 +43,6 @@ impl<'stdout> TerminalCursor<'stdout> {
 
         TerminalCursor {
             terminal_cursor: cursor,
-            screen: &screen.stdout,
         }
     }
 
@@ -58,8 +56,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     /// cursor.goto(4,5);
     ///
     /// ```
-    pub fn goto(&self, x: u16, y: u16) {
-        self.terminal_cursor.goto(x, y, &self.screen);
+    pub fn goto(&self, x: u16, y: u16, screen: &mut Screen) {
+        self.terminal_cursor.goto(x, y, screen);
     }
 
     /// Get current cursor position (x,y) in the terminal.
@@ -71,8 +69,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     /// // get the current cursor pos
     /// let (x,y) = cursor.pos();
     /// ```
-    pub fn pos(&self) -> (u16, u16) {
-        self.terminal_cursor.pos(&self.screen)
+    pub fn pos(&self, screen: &mut Screen) -> (u16, u16) {
+        self.terminal_cursor.pos(&screen.stdout)
     }
 
     /// Move the current cursor position `n` times up.
@@ -84,8 +82,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     /// // Move the cursor to position 3 times to the up in the terminal
     /// cursor.move_up(3);
     /// ```
-    pub fn move_up(&mut self, count: u16) -> &mut TerminalCursor<'stdout> {
-        self.terminal_cursor.move_up(count, &self.screen);
+    pub fn move_up(&mut self, count: u16, screen: &mut Screen) -> &mut TerminalCursor {
+        self.terminal_cursor.move_up(count, screen);
         self
     }
 
@@ -98,8 +96,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     /// // Move the cursor to position 3 times to the right in the terminal
     /// cursor.move_right(3);
     /// ```
-    pub fn move_right(&mut self, count: u16) -> &mut TerminalCursor<'stdout> {
-        self.terminal_cursor.move_right(count, &self.screen);
+    pub fn move_right(&mut self, count: u16, screen: &mut Screen) -> &mut TerminalCursor {
+        self.terminal_cursor.move_right(count, screen);
         self
     }
 
@@ -112,8 +110,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     /// // Move the cursor to position 3 times to the down in the terminal
     /// cursor.move_down(3);
     /// ```
-    pub fn move_down(&mut self, count: u16) -> &mut TerminalCursor<'stdout> {
-        self.terminal_cursor.move_down(count, &self.screen);
+    pub fn move_down(&mut self, count: u16, screen: &mut Screen) -> &mut TerminalCursor {
+        self.terminal_cursor.move_down(count, screen);
         self
     }
 
@@ -126,8 +124,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     ///  // Move the cursor to position 3 times to the left in the terminal
     ///  cursor.move_left(3);
     /// ```
-    pub fn move_left(&mut self, count: u16) -> &mut TerminalCursor<'stdout> {
-        self.terminal_cursor.move_left(count, &self.screen);
+    pub fn move_left(&mut self, count: u16, screen: &mut Screen) -> &mut TerminalCursor {
+        self.terminal_cursor.move_left(count, screen);
         self
     }
 
@@ -141,8 +139,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     ///
     /// cursor.safe_position();
     /// ```
-    pub fn save_position(&self) {
-        self.terminal_cursor.save_position(&self.screen);
+    pub fn save_position(&self, screen: &mut Screen) {
+        self.terminal_cursor.save_position(screen);
     }
 
     /// Return to saved cursor position
@@ -155,8 +153,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     ///
     /// cursor.reset_position();
     /// ```
-    pub fn reset_position(&self) {
-        self.terminal_cursor.reset_position(&self.screen);
+    pub fn reset_position(&self, screen: &mut Screen) {
+        self.terminal_cursor.reset_position(screen);
     }
 
     /// Hide de cursor in the console.
@@ -165,8 +163,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     /// let cursor = cursor(&Screen::default());
     /// cursor.hide();
     /// ```
-    pub fn hide(&self) {
-        self.terminal_cursor.hide(&self.screen);
+    pub fn hide(&self, screen: &mut Screen) {
+        self.terminal_cursor.hide(screen);
     }
 
     /// Show the cursor in the console.
@@ -178,8 +176,8 @@ impl<'stdout> TerminalCursor<'stdout> {
     /// cursor.show();
     ///
     /// ```
-    pub fn show(&self) {
-        self.terminal_cursor.show(&self.screen);
+    pub fn show(&self, screen: &mut Screen) {
+        self.terminal_cursor.show(screen);
     }
 
     /// Enable or disable blinking of the terminal.
@@ -192,13 +190,7 @@ impl<'stdout> TerminalCursor<'stdout> {
     /// cursor.blink(true);
     /// cursor.blink(false);
     /// ```
-    pub fn blink(&self, blink: bool) {
-        self.terminal_cursor.blink(blink, &self.screen);
+    pub fn blink(&self, blink: bool, screen: &mut Screen) {
+        self.terminal_cursor.blink(blink, screen);
     }
-}
-
-/// Get an TerminalCursor implementation whereon cursor related actions can be performed.
-/// Pass the reference to any screen you want this type to perform actions on.
-pub fn cursor<'stdout>(stdout: &'stdout Screen) -> TerminalCursor<'stdout> {
-    TerminalCursor::new(stdout)
 }

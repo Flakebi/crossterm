@@ -57,6 +57,10 @@ impl<'stdout> Terminal<'stdout> {
         return self.terminal.terminal_size(&self.screen);
     }
 
+    pub fn clear(&self, clear_type: ClearType, screen: &mut Screen) {
+        self.terminal.clear(clear_type, screen)
+    }
+
     /// Exit the current process.
     ///
     /// ```rust

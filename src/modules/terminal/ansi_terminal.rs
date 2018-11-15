@@ -21,7 +21,7 @@ impl ITerminal for AnsiTerminal {
         match clear_type {
             ClearType::All => {
                 write!(screen, csi!("2J"));
-                TerminalCursor::new(screen).goto(0,0);
+                TerminalCursor::new().goto(0,0, screen);
             }
             ClearType::FromCursorDown => {
                 write!(screen, csi!("J"));
