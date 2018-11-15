@@ -38,15 +38,15 @@ pub enum ClearType {
 /// so that color related actions can be preformed on both unix and windows systems.
 trait ITerminal {
     /// Clear the current cursor by specifying the clear type
-    fn clear(&self, clear_type: ClearType, stdout: &Arc<TerminalOutput>);
+    fn clear(&self, clear_type: ClearType, stdout: &mut Screen);
     /// Get the terminal size (x,y)
     fn terminal_size(&self, stdout: &Arc<TerminalOutput>) -> (u16, u16);
     /// Scroll `n` lines up in the current terminal.
-    fn scroll_up(&self, count: i16, stdout: &Arc<TerminalOutput>);
+    fn scroll_up(&self, count: i16, stdout: &mut Screen);
     /// Scroll `n` lines down in the current terminal.
-    fn scroll_down(&self, count: i16, stdout: &Arc<TerminalOutput>);
+    fn scroll_down(&self, count: i16, stdout: &mut Screen);
     /// Resize terminal to the given width and height.
-    fn set_size(&self, width: i16, height: i16, stdout: &Arc<TerminalOutput>);
+    fn set_size(&self, width: i16, height: i16, stdout: &mut Screen);
     /// Close the current terminal
     fn exit(&self,stdout: &Arc<TerminalOutput>);
 }

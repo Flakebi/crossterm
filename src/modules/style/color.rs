@@ -26,14 +26,13 @@ use Screen;
 /// // reset color to default
 /// colored_terminal.reset();
 /// ```
-pub struct TerminalColor<'stdout> {
+pub struct TerminalColor {
     color: Box<ITerminalColor + Sync + Send>,
-    stdout: &'stdout Arc<TerminalOutput>,
 }
 
-impl<'stdout> TerminalColor<'stdout> {
+impl TerminalColor {
     /// Create new instance whereon color related actions can be performed.
-    pub fn new(stdout: &'stdout Arc<TerminalOutput>) -> TerminalColor<'stdout> {
+    pub fn new() -> TerminalColor {
         #[cfg(target_os = "windows")]
         let color = functions::get_module::<Box<ITerminalColor + Sync + Send>>(
             Box::from(WinApiColor::new()),
@@ -43,10 +42,7 @@ impl<'stdout> TerminalColor<'stdout> {
         #[cfg(not(target_os = "windows"))]
         let color = Box::from(AnsiColor::new()) as Box<ITerminalColor + Sync + Send>;
 
-        TerminalColor {
-            color,
-            stdout: stdout,
-        }
+        TerminalColor { color }
     }
 
     /// Set the foreground color to the given color.
@@ -61,8 +57,8 @@ impl<'stdout> TerminalColor<'stdout> {
     /// colored_terminal.set_fg(Color::from("Red"));
     ///
     /// ```
-    pub fn set_fg(&self, color: Color) {
-        self.color.set_fg(color, &self.stdout);
+    pub fn set_fg(&mut self, color: Color, screen: &mut Screen) {
+        self.color.set_fg(color, screen);
     }
 
     /// Set the background color to the given color.
@@ -77,8 +73,8 @@ impl<'stdout> TerminalColor<'stdout> {
     /// colored_terminal.set_bg(Color::from("Red"));
     ///
     /// ```
-    pub fn set_bg(&self, color: Color) {
-        self.color.set_bg(color, &self.stdout);
+    pub fn set_bg(&mut self, color: Color, screen: &mut Screen) {
+        self.color.set_bg(color, screen);
     }
 
     /// Reset the terminal colors and attributes to default.
@@ -88,8 +84,8 @@ impl<'stdout> TerminalColor<'stdout> {
     /// let colored_terminal = color(&screen);
     /// colored_terminal.reset();
     /// ```
-    pub fn reset(&self) {
-        self.color.reset(&self.stdout);
+    pub fn reset(&mut self, screen: &mut Screen) {
+        self.color.reset(screen);
     }
 
     /// Get available color count.
@@ -107,10 +103,4 @@ impl<'stdout> TerminalColor<'stdout> {
             None => 8,
         })
     }
-}
-
-/// Get an Terminal Color implementation whereon color related actions can be performed.
-/// Pass the reference to any screen you want this type to perform actions on.
-pub fn color<'stdout>(screen: &'stdout Screen) -> TerminalColor<'stdout> {
-    TerminalColor::new(&screen.stdout)
 }

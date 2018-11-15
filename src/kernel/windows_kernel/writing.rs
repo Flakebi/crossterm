@@ -114,21 +114,28 @@ pub fn write_char_buffer(handle: &HANDLE, buf: &[u8]) -> ::std::io::Result<usize
     };
 
     let mut cells_written: u32 = 0;
+    let mut total_written: u32 = 0;
     let mut success = false;
-    // write to console
-    unsafe {
-        success = kernel::is_true(WriteConsoleW(
-            *handle,
-            utf16_ptr,
-            utf16.len() as u32,
-            &mut cells_written,
-            NULL,
-        ));
+    while total_written < utf16.len() as u32 {
+        // write to console
+        unsafe {
+            success = kernel::is_true(WriteConsoleW(
+                *handle,
+                utf16_ptr,
+                utf16.len() as u32,
+                &mut cells_written,
+                NULL,
+            ));
+        }
+        total_written += cells_written;
     }
 
     match success {
-        // think this is wrong could be done better!
-        true => Ok(utf8.as_bytes().len()),
+        true => Ok(buf.len()),
         false => Ok(0),
+        false => Err(io::Error::new(
+            io::ErrorKind::Other,
+            "Could not write to console.",
+        )),
     }
 }

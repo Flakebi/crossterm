@@ -20,7 +20,7 @@ use Screen;
 ///
 /// // Get cursor and goto pos X: 5, Y: 10
 /// cursor.goto(5,10);
-/// 
+///
 /// cursor.show();
 /// cursor.hide();
 /// cursor.blink(true);
@@ -33,7 +33,7 @@ pub struct TerminalCursor<'stdout> {
 
 impl<'stdout> TerminalCursor<'stdout> {
     /// Create new cursor instance whereon cursor related actions can be performed.
-    pub fn new(screen: &'stdout Arc<TerminalOutput>) -> TerminalCursor<'stdout> {
+    pub fn new(screen: &'stdout Screen) -> TerminalCursor<'stdout> {
         #[cfg(target_os = "windows")]
         let cursor =
             functions::get_module::<Box<ITerminalCursor + Sync + Send>>(WinApiCursor::new(), AnsiCursor::new())
@@ -44,7 +44,7 @@ impl<'stdout> TerminalCursor<'stdout> {
 
         TerminalCursor {
             terminal_cursor: cursor,
-            screen: screen,
+            screen: &screen.stdout,
         }
     }
 
@@ -200,5 +200,5 @@ impl<'stdout> TerminalCursor<'stdout> {
 /// Get an TerminalCursor implementation whereon cursor related actions can be performed.
 /// Pass the reference to any screen you want this type to perform actions on.
 pub fn cursor<'stdout>(stdout: &'stdout Screen) -> TerminalCursor<'stdout> {
-    TerminalCursor::new(&stdout.stdout)
+    TerminalCursor::new(stdout)
 }

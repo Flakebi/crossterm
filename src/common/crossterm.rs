@@ -54,8 +54,8 @@ impl<'crossterm> Crossterm {
     /// let crossterm = Crossterm::new(&Screen::default());
     /// let cursor = crossterm.cursor();
     /// ```
-    pub fn cursor(&self) -> cursor::TerminalCursor {
-        cursor::TerminalCursor::new(&self.stdout)
+    pub fn cursor<'a>(&self, screen: &'a Screen) -> cursor::TerminalCursor<'a> {
+        cursor::TerminalCursor::new(screen)
     }
 
     /// Get an `TerminalInput` implementation whereon terminal related actions can be performed.
@@ -95,7 +95,7 @@ impl<'crossterm> Crossterm {
     /// let mut terminal = crossterm.terminal();
     /// ```
     pub fn color(&self) -> style::TerminalColor {
-        return style::TerminalColor::new(&self.stdout);
+        return style::TerminalColor::new();
     }
 
     /// This could be used to style an `Displayable` type with colors and attributes.

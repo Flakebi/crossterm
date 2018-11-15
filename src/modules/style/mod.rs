@@ -17,10 +17,10 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::fmt::Display;
 
-pub use self::color::{TerminalColor, color};
+use common::screen::Screen;
+pub use self::color::TerminalColor;
 pub use self::objectstyle::ObjectStyle;
 pub use self::styledobject::StyledObject;
-pub use self::styledobject::DisplayableObject;
 use super::functions;
 
 use TerminalOutput;
@@ -35,11 +35,11 @@ use TerminalOutput;
 /// so that color related actions can be preformed on both unix and windows systems.
 trait ITerminalColor {
     /// Set the foreground color to the given color.
-    fn set_fg(&self, fg_color: Color, stdout: &Arc<TerminalOutput>);
+    fn set_fg(&self, fg_color: Color, stdout: &mut Screen);
     /// Set the background color to the given color.
-    fn set_bg(&self, fg_color: Color, stdout: &Arc<TerminalOutput>);
+    fn set_bg(&self, fg_color: Color, stdout: &mut Screen);
     /// Reset the terminal color to default.
-    fn reset(&self, stdout: &Arc<TerminalOutput>);
+    fn reset(&self, stdout: &mut Screen);
     /// Gets an value that represents an color from the given `Color` and `ColorType`.
     fn color_value(&self, color: Color, color_type: ColorType) -> String;
 }

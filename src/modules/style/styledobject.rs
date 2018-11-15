@@ -4,6 +4,7 @@ use super::{Color, ObjectStyle};
 use Screen;
 
 use std::fmt::Display;
+use std::io::Write;
 
 #[cfg(unix)]
 use super::Attribute;
@@ -82,7 +83,7 @@ impl<'a, D: Display + 'a> StyledObject<D> {
     /// ```
     #[cfg(unix)]
     pub fn attr(mut self, attr: Attribute) -> StyledObject<D> {
-        &self.object_style.add_attr(attr);
+        self.object_style.add_attr(attr);
         self
     }
 
@@ -154,78 +155,32 @@ impl<'a, D: Display + 'a> StyledObject<D> {
     ///     .on(Color::Black)
     ///     .paint(&screen);
     /// ```
-    pub fn paint(&self, screen: &Screen)
+    pub fn paint(&self, screen: &mut Screen)
     {
-        let colored_terminal = ::color(&screen);
+        let mut colored_terminal = ::TerminalColor::new();
         let mut reset = false;
 
         if let Some(bg) = self.object_style.bg_color {
-            colored_terminal.set_bg(bg);
+            colored_terminal.set_bg(bg, screen);
             reset = true;
         }
 
         if let Some(fg) = self.object_style.fg_color {
-            colored_terminal.set_fg(fg);
+            colored_terminal.set_fg(fg, screen);
             reset = true;
         }
 
         #[cfg(unix)]
             for attr in self.object_style.attrs.iter() {
-            screen.stdout.write_string(format!(csi!("{}m"), *attr as i16));
+            write!(screen, csi!("{}m"), *attr as i16);
             reset = true;
         }
 
         use std::fmt::Write;
-        let mut content = String::new();
-        write!(content, "{}", self.content).unwrap();
-        screen.stdout.write_string(content);
-        screen.stdout.flush();
+        write!(screen, "{}", self.content).unwrap();
 
         if reset && self.reset {
-            colored_terminal.reset();
+            colored_terminal.reset(screen);
         }
-    }
-
-    /// this converts an styled object into an `DisplayableObject` witch implements: `Display` and could be used inside the write function of the standard library's.
-    ///
-    /// ```
-    ///   let screen = Screen::default();
-    //    let styled_object = style("test").with(Color::Yellow);
-    //    let display_object = styled_object.into_displayable(&screen);
-    //    println!("Colored text: {}. Default color", display_object);
-    /// ```
-    pub fn into_displayable(self, screen: &'a Screen) -> DisplayableObject<'a, D>
-    {
-        return DisplayableObject::new(screen, self)
-    }
-}
-
-use std::fmt::{Formatter, Error};
-
-/// This is a wrapper for a styled object so that the styled object could be printed with the standard write functions in rust.
-///
-/// ```
-/// write! ("some normal text, {} <- some colored text", DisplayableObject::new(&screen, styled_object));
-/// println! ("some normal text, {} <- some colored text", DisplayableObject::new(&screen, styled_object))
-/// ```
-pub struct DisplayableObject<'a, D:Display + 'a>
-{
-    styled_object: StyledObject<D>,
-    screen: &'a Screen,
-}
-
-impl <'a, D: Display + 'a> DisplayableObject<'a, D>
-{
-    pub fn new(screen: &'a Screen, styled_object: StyledObject<D>) -> DisplayableObject<'a, D>
-    {
-        DisplayableObject { screen, styled_object }
-    }
-}
-
-impl<'a, D: Display + 'a> Display for DisplayableObject<'a, D>
-{
-    fn fmt(&self, _f: &mut Formatter) -> Result<(), Error> {
-        self.styled_object.paint(&self.screen);
-        return Ok(())
     }
 }

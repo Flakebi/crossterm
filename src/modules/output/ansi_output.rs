@@ -24,7 +24,8 @@ impl IStdout for AnsiOutput {
     fn write(&self, buf: &[u8]) -> io::Result<usize> {
         let out = &self.handle;
         let mut handle = out.lock();
-        handle.write(buf)
+        handle.write_all(buf)?;
+        Ok(buf.len())
     }
 
     fn flush(&self) -> io::Result<()> {

@@ -3,6 +3,8 @@
 
 use super::*;
 
+use std::io::Write;
+
 /// This struct is an ANSI escape code implementation for color related actions.
 pub struct AnsiColor;
 
@@ -13,22 +15,22 @@ impl AnsiColor {
 }
 
 impl ITerminalColor for AnsiColor {
-    fn set_fg(&self, fg_color: Color, stdout: &Arc<TerminalOutput>) {
-        stdout.write_string(format!(
+    fn set_fg(&self, fg_color: Color, screen: &mut Screen) {
+        write!(screen,
             csi!("{}m"),
             self.color_value(fg_color, ColorType::Foreground)
-        ));
+        );
     }
 
-    fn set_bg(&self, bg_color: Color, stdout: &Arc<TerminalOutput>) {
-        stdout.write_string(format!(
+    fn set_bg(&self, bg_color: Color, screen: &mut Screen) {
+        write!(screen,
             csi!("{}m"),
             self.color_value(bg_color, ColorType::Background)
-        ));
+        );
     }
 
-    fn reset(&self, stdout: &Arc<TerminalOutput>) {
-        stdout.write_str(csi!("0m"));
+    fn reset(&self, screen: &mut Screen) {
+        write!(screen, csi!("0m"));
     }
 
     fn color_value(&self, color: Color, color_type: ColorType) -> String {
