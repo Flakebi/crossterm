@@ -10,6 +10,7 @@ use std::io::Write;
 use super::Attribute;
 
 /// Struct that contains both the style and the content wits can be styled.
+#[derive(Clone)]
 pub struct StyledObject<D: Display> {
     pub object_style: ObjectStyle,
     pub content: D,
